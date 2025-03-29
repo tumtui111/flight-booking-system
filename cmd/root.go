@@ -97,7 +97,11 @@ func InteractiveProgram(
 		fmt.Println("5. Get Passenger detail")
 		fmt.Println("9. Exit")
 		var choice int
-		fmt.Scan(&choice)
+		_, err := fmt.Scan(&choice)
+		if err != nil {
+			fmt.Println("invalid choice.")
+			return
+		}
 
 		fmt.Println("====================================================================================")
 
@@ -128,21 +132,36 @@ func BookFlight(bookingService *bookingSvc.BookingService) {
 
 	var passengerID, seatClassInput, flightID, isUpgradeClass string
 
+	// input passenger ID
 	fmt.Println("Enter Passenger ID:")
-	fmt.Scan(&passengerID)
+	_, err := fmt.Scan(&passengerID)
+	if err != nil {
+		fmt.Println("error invalid passengerID format.")
+		return
+	}
 	passengerID = strings.TrimSpace(passengerID)
 
+	// input flight ID
 	fmt.Println("Enter Flight ID:")
-	fmt.Scan(&flightID)
+	_, err = fmt.Scan(&flightID)
+	if err != nil {
+		fmt.Println("error invalid FlightID format.")
+		return
+	}
 	flightID = strings.TrimSpace(flightID)
 
+	// input seat class
 	fmt.Println("Enter Seat Class (Economy, Business, First):")
-	fmt.Scan(&seatClassInput)
+	_, err = fmt.Scan(&seatClassInput)
+	if err != nil {
+		fmt.Println("error invalid seat class format.")
+		return
+	}
 	seatClassInput = strings.TrimSpace(seatClassInput)
-
 	seatClass := domain.SeatClass(seatClassInput)
 	bookingDate := time.Now()
 
+	// book seat
 	booking, err := bookingService.BookSeat(passengerID, flightID, seatClass, bookingDate)
 	if err != nil {
 
@@ -168,7 +187,11 @@ func BookFlight(bookingService *bookingSvc.BookingService) {
 		}
 
 		fmt.Printf("Booking failed: %v Upgrade to %s? (yes/no)\n", err, domain.ClassOrder[classIndex+1])
-		fmt.Scan(&isUpgradeClass)
+		_, err := fmt.Scan(&isUpgradeClass)
+		if err != nil {
+			fmt.Println("invalid seat class format.")
+			return
+		}
 
 		// re-booking with higher class
 		if isUpgradeClass == "yes" {
@@ -197,7 +220,11 @@ func CancelFlight(bookingService *bookingSvc.BookingService) {
 	var bookingID string
 
 	fmt.Println("Enter Booking ID:")
-	fmt.Scan(&bookingID)
+	_, err := fmt.Scan(&bookingID)
+	if err != nil {
+		fmt.Println("invalid booking ID format.")
+		return
+	}
 
 	canceledBooking, err := bookingService.CancelBooking(bookingID)
 	if err != nil {
@@ -215,27 +242,46 @@ func GetFlightInformation(flightService *flightSvc.FlightService) {
 	var flightID string
 
 	fmt.Println("Enter Flight ID:")
-	fmt.Scan(&flightID)
+	_, err := fmt.Scan(&flightID)
+	if err != nil {
+		fmt.Println("invalid flight ID format.")
+		return
+	}
+
 	flightService.GetFlightInfo(flightID)
 }
 
-func SearchAvailableFlightBasedOn(flightRepo *flightRepo.FlightRepository) error {
+func SearchAvailableFlightBasedOn(flightRepo *flightRepo.FlightRepository) {
 
 	defer fmt.Println("====================================================================================")
 
 	var origin, destination, dateInput string
 
 	fmt.Println("Enter Origin:")
-	fmt.Scan(&origin)
+	_, err := fmt.Scan(&origin)
+	if err != nil {
+		fmt.Println("invalid flight ID format.")
+		return
+	}
+
 	fmt.Println("Enter Destination:")
-	fmt.Scan(&destination)
+	_, err = fmt.Scan(&destination)
+	if err != nil {
+		fmt.Println("invalid flight ID format.")
+		return
+	}
+
 	fmt.Println("Enter Date (YYYY-MM-DD):")
-	fmt.Scan(&dateInput)
+	_, err = fmt.Scan(&dateInput)
+	if err != nil {
+		fmt.Println("invalid flight ID format.")
+		return
+	}
 
 	date, err := time.Parse("2006-01-02", dateInput)
 	if err != nil {
 		fmt.Println("Invalid date format.")
-		return err
+		return
 	}
 
 	flights := flightRepo.SearchFlights(origin, destination, date)
@@ -246,7 +292,6 @@ func SearchAvailableFlightBasedOn(flightRepo *flightRepo.FlightRepository) error
 			fmt.Printf("Flight ID: %s, Departure: %s\n", f.FlightID, f.Departure)
 		}
 	}
-	return nil
 }
 
 func GetPassengerDetails(passengerService *passengerSvc.PassengerService) {
@@ -256,7 +301,11 @@ func GetPassengerDetails(passengerService *passengerSvc.PassengerService) {
 	var passengerID string
 
 	fmt.Println("Enter passenger id:")
-	fmt.Scan(&passengerID)
+	_, err := fmt.Scan(&passengerID)
+	if err != nil {
+		fmt.Println("invalid passenger id format.")
+		return
+	}
 
 	passenger, err := passengerService.GetPassengerDetails(passengerID)
 	if err != nil {

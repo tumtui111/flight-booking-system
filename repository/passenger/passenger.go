@@ -32,14 +32,15 @@ func (pr *PassengerRepository) GetPassenger(passengerID string) (*domain.Passeng
 	return passenger, exists
 }
 
-func (pr *PassengerRepository) UpdatePassengerBookingStatus(booking *domain.Booking, status string) error {
+func (pr *PassengerRepository) UpdatePassengerBookingStatus(booking *domain.Booking, status string) {
 
 	pr.Mutex.Lock()
 	defer pr.Mutex.Unlock()
 
 	passenger, exists := pr.Passengers[booking.PassengerID]
 	if !exists {
-		return fmt.Errorf("not found passenger id to update status")
+		fmt.Println("not found passenger id to update status")
+		return
 	}
 
 	for i, history := range passenger.BookingHistory {
@@ -47,18 +48,17 @@ func (pr *PassengerRepository) UpdatePassengerBookingStatus(booking *domain.Book
 			passenger.BookingHistory[i].Status = status
 		}
 	}
-
-	return nil
 }
 
-func (pr *PassengerRepository) UpdatePassengerBookingRefundAmount(booking *domain.Booking, refundAmount float64) error {
+func (pr *PassengerRepository) UpdatePassengerBookingRefundAmount(booking *domain.Booking, refundAmount float64) {
 
 	pr.Mutex.Lock()
 	defer pr.Mutex.Unlock()
 
 	passenger, exists := pr.Passengers[booking.PassengerID]
 	if !exists {
-		return fmt.Errorf("not found passenger id to update status")
+		fmt.Println("not found passenger id to update status")
+		return
 	}
 
 	for i, history := range passenger.BookingHistory {
@@ -66,6 +66,4 @@ func (pr *PassengerRepository) UpdatePassengerBookingRefundAmount(booking *domai
 			passenger.BookingHistory[i].RefundAmount = refundAmount
 		}
 	}
-
-	return nil
 }
