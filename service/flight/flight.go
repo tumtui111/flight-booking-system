@@ -2,18 +2,21 @@ package service
 
 import (
 	"flight-book-system/domain"
-	repository "flight-book-system/repository/flight"
 	"sync"
 	"fmt"
 )
 
+type IFlightRepository interface {
+	GetFlight(flightID string) (*domain.Flight, bool)
+}
+
 type FlightService struct {
-	FlightRepo *repository.FlightRepository
+	FlightRepo IFlightRepository
 	Bookings   map[string]*domain.Booking
 	Mutex      sync.Mutex
 }
 
-func NewFlightService(flightRepo *repository.FlightRepository) *FlightService {
+func NewFlightService(flightRepo IFlightRepository) *FlightService {
 	return &FlightService{
 		FlightRepo: flightRepo,
 	}

@@ -4,15 +4,18 @@ import (
 	"flight-book-system/domain"
 	"sync"
 	"fmt"
-	PassengerRepository "flight-book-system/repository/passenger"
 )
 
+type IPassengerRepository interface {
+	GetPassenger(passengerID string) (*domain.Passenger, bool)
+}
+
 type PassengerService struct {
-	PassengerRepo *PassengerRepository.PassengerRepository
+	PassengerRepo IPassengerRepository
 	Mutex      sync.Mutex
 }
 
-func NewPassengerService(passengerRepo *PassengerRepository.PassengerRepository) *PassengerService {
+func NewPassengerService(passengerRepo IPassengerRepository) *PassengerService {
 	return &PassengerService{
 		PassengerRepo: passengerRepo,
 	}

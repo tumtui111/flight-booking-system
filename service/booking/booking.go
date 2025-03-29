@@ -2,8 +2,6 @@ package service
 
 import (
 	"flight-book-system/domain"
-	FlightRepository "flight-book-system/repository/flight"
-	PassengerRepository "flight-book-system/repository/passenger"
 
 	"fmt"
 	"sync"
@@ -11,15 +9,26 @@ import (
 	"math"
 )
 
+type IFlightRepository interface {
+	GetFlight(flightID string) (*domain.Flight, bool)
+}
+
+type IPassengerRepository interface {
+	AddPassenger(passenger *domain.Passenger)
+	GetPassenger(passengerID string) (*domain.Passenger, bool)
+	UpdatePassengerBookingStatus(booking *domain.Booking, status string)
+	UpdatePassengerBookingRefundAmount(booking *domain.Booking, refundAmount float64)
+}
+
 type BookingService struct {
-	FlightRepo    *FlightRepository.FlightRepository
-	PassengerRepo *PassengerRepository.PassengerRepository
+	FlightRepo    IFlightRepository
+	PassengerRepo IPassengerRepository
 	Bookings      map[string]*domain.Booking
 	Passengers    map[string]*domain.Passenger
 	Mutex         sync.Mutex
 }
 
-func NewBookingService(flightRepo *FlightRepository.FlightRepository, passengerRepo *PassengerRepository.PassengerRepository) *BookingService {
+func NewBookingService(flightRepo IFlightRepository, passengerRepo IPassengerRepository) *BookingService {
 	return &BookingService{
 		FlightRepo:    flightRepo,
 		PassengerRepo: passengerRepo,
