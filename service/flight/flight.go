@@ -2,8 +2,8 @@ package service
 
 import (
 	"flight-book-system/domain"
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type IFlightRepository interface {
@@ -22,15 +22,14 @@ func NewFlightService(flightRepo IFlightRepository) *FlightService {
 	}
 }
 
-func (fs *FlightService) GetFlightInfo(flightID string) {
+func (fs *FlightService) GetFlightInfo(flightID string) (*domain.Flight, error) {
+	fs.Mutex.Lock()
+	defer fs.Mutex.Unlock()
+
 	flight, exists := fs.FlightRepo.GetFlight(flightID)
 	if !exists {
-		fmt.Println("Flight not found.")
-		return
+		return nil, fmt.Errorf("flight not found")
 	}
-	fmt.Printf("Flight ID: %s\nOrigin: %s\nDestination: %s\nDeparture: %s\n", flight.FlightID, flight.Origin, flight.Destination, flight.Departure)
-	fmt.Println("Seat Availability:")
-	for class, info := range flight.Seats {
-		fmt.Printf("%s - Total: %d, Available: %d, Base Price: %.2f\n", class, info.Total, info.Available, info.BasePrice)
-	}
+
+	return flight, nil
 }

@@ -2,8 +2,8 @@ package service
 
 import (
 	"flight-book-system/domain"
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type IPassengerRepository interface {
@@ -12,7 +12,7 @@ type IPassengerRepository interface {
 
 type PassengerService struct {
 	PassengerRepo IPassengerRepository
-	Mutex      sync.Mutex
+	Mutex         sync.Mutex
 }
 
 func NewPassengerService(passengerRepo IPassengerRepository) *PassengerService {
@@ -25,7 +25,6 @@ func (ps *PassengerService) GetPassengerDetails(passengerID string) (*domain.Pas
 	ps.Mutex.Lock()
 	defer ps.Mutex.Unlock()
 
-	
 	passenger, exists := ps.PassengerRepo.GetPassenger(passengerID)
 	if !exists {
 		return nil, fmt.Errorf("passenger not found")

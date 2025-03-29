@@ -19,4 +19,4 @@ gen-mock:
 	mockery --all --case snake --disable-version-string --keeptree
 
 test:
-	go test ./test/... -coverprofile coverage.out -tags dynamic
+	go test ./service/... -coverprofile coverage.out -tags dynamic

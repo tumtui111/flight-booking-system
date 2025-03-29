@@ -4,9 +4,9 @@ import (
 	"flight-book-system/domain"
 
 	"fmt"
+	"math"
 	"sync"
 	"time"
-	"math"
 )
 
 type IFlightRepository interface {
@@ -60,9 +60,9 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	_, exists = bs.PassengerRepo.GetPassenger(passengerID)
 	if !exists {
 		bs.Passengers[passengerID] = &domain.Passenger{
-			PassengerID:    passengerID,
+			PassengerID:     passengerID,
 			IsFrequentFlyer: false,
-			BookingHistory: []domain.BookingHistory{}}
+			BookingHistory:  []domain.BookingHistory{}}
 	}
 
 	// dynamic pricing ( think before available seat is decreased)
@@ -198,7 +198,7 @@ func calculateDynamicPricing(basePrice float64, flight *domain.Flight, bookingDa
 
 	// check is frequent flyer discount 10% for frequent flyer
 	if passenger.IsFrequentFlyer {
-		price *= 0.90 
+		price *= 0.90
 	}
 
 	return price
