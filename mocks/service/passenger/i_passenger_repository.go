@@ -13,6 +13,11 @@ type IPassengerRepository struct {
 	mock.Mock
 }
 
+// AddPassenger provides a mock function with given fields: passenger
+func (_m *IPassengerRepository) AddPassenger(passenger *domain.Passenger) {
+	_m.Called(passenger)
+}
+
 // GetPassenger provides a mock function with given fields: passengerID
 func (_m *IPassengerRepository) GetPassenger(passengerID string) (*domain.Passenger, bool) {
 	ret := _m.Called(passengerID)
@@ -41,6 +46,16 @@ func (_m *IPassengerRepository) GetPassenger(passengerID string) (*domain.Passen
 	}
 
 	return r0, r1
+}
+
+// UpdatePassengerBookingRefundAmount provides a mock function with given fields: booking, refundAmount
+func (_m *IPassengerRepository) UpdatePassengerBookingRefundAmount(booking *domain.Booking, refundAmount float64) {
+	_m.Called(booking, refundAmount)
+}
+
+// UpdatePassengerBookingStatus provides a mock function with given fields: booking, status
+func (_m *IPassengerRepository) UpdatePassengerBookingStatus(booking *domain.Booking, status string) {
+	_m.Called(booking, status)
 }
 
 // NewIPassengerRepository creates a new instance of IPassengerRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

@@ -50,23 +50,26 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	flight.Mutex.Lock()
 	defer flight.Mutex.Unlock()
 
-	// check seat available
+	// check seat available -> then return to ask for upgrade class
 	seatInfo, exists := flight.Seats[seatClass]
 	if !exists || seatInfo.Available == 0 {
 		return nil, fmt.Errorf("no seats available in %s", seatClass)
 	}
 
 	// check passenger detail exists -> if not, created
-	_, exists = bs.PassengerRepo.GetPassenger(passengerID)
+	passenger, exists := bs.PassengerRepo.GetPassenger(passengerID)
 	if !exists {
-		bs.Passengers[passengerID] = &domain.Passenger{
+		// create new passenger detail
+		passenger = &domain.Passenger{
 			PassengerID:     passengerID,
 			IsFrequentFlyer: false,
 			BookingHistory:  []domain.BookingHistory{}}
+
+			bs.PassengerRepo.AddPassenger(passenger)
 	}
 
 	// dynamic pricing ( think before available seat is decreased)
-	price := calculateDynamicPricing(seatInfo.BasePrice, flight, bookingDate, seatInfo, bs.Passengers[passengerID])
+	price := calculateDynamicPricing(seatInfo.BasePrice, flight, bookingDate, seatInfo, passenger)
 
 	//logic for handling seatID in each seat class
 	var assignedSeat string
@@ -102,23 +105,18 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	bs.Bookings[booking.BookingID] = booking
 
 	// keep passenger booking history
-	if _, exists := bs.Passengers[passengerID]; !exists {
-		bs.Passengers[passengerID] = &domain.Passenger{
-			PassengerID:    passengerID,
-			BookingHistory: []domain.BookingHistory{}}
-	}
-	bs.Passengers[passengerID].BookingHistory = append(bs.Passengers[passengerID].BookingHistory, domain.BookingHistory{
+	passenger.BookingHistory = append(passenger.BookingHistory, domain.BookingHistory{
 		FlightID:    flightID,
 		Origin:      flight.Origin,
 		Destination: flight.Destination,
 		Departure:   flight.Departure,
 		BookingID:   booking.BookingID,
+		BookindDate: bookingDate,
+		Class:       seatClass,
 		Seat:        booking.Seat,
 		Price:       booking.Price,
 		Status:      booking.Status,
 	})
-
-	bs.PassengerRepo.AddPassenger(bs.Passengers[passengerID])
 
 	return booking, nil
 }
@@ -147,14 +145,6 @@ func (bs *BookingService) CancelBooking(bookingID string) (*domain.Booking, erro
 	flight.Seats[booking.Class].Available++
 	flight.Seats[booking.Class].SeatMap[booking.Seat] = false
 	defer flight.Mutex.Unlock()
-
-	for _, seats := range flight.Seats {
-		if seats.Total-seats.Available == 0 {
-			continue
-		}
-		seats.Available++
-		break
-	}
 
 	// Calculate refund amount
 	today := time.Now()
@@ -186,8 +176,10 @@ func calculateDynamicPricing(basePrice float64, flight *domain.Flight, bookingDa
 	// calculate up to date booking
 	daysBeforeDeparture := int(flight.Departure.Sub(bookingDate).Hours() / 24)
 	if daysBeforeDeparture > 30 {
+		//early booking
 		price *= 0.9 // 10% discount
 	} else if daysBeforeDeparture < 7 {
+		//last minute condition
 		price *= 1.2 // 20% surcharge
 	}
 

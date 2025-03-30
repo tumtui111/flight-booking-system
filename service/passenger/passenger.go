@@ -7,7 +7,10 @@ import (
 )
 
 type IPassengerRepository interface {
+	AddPassenger(passenger *domain.Passenger)
 	GetPassenger(passengerID string) (*domain.Passenger, bool)
+	UpdatePassengerBookingStatus(booking *domain.Booking, status string)
+	UpdatePassengerBookingRefundAmount(booking *domain.Booking, refundAmount float64)
 }
 
 type PassengerService struct {

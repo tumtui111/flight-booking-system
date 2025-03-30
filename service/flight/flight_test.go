@@ -1,12 +1,10 @@
 package service
 
 import (
-	"testing"
-	"time"
-
-	// "github.com/stretchr/testify/assert"
 	"flight-book-system/domain"
 	mockFlight "flight-book-system/mocks/service/flight"
+	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
