@@ -2,6 +2,7 @@ package service
 
 import (
 	"flight-book-system/domain"
+	"flight-book-system/constant"
 
 	"fmt"
 	"math"
@@ -44,7 +45,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	// flight detail update
 	flight, exists := bs.FlightRepo.GetFlight(flightID)
 	if !exists {
-		return nil, fmt.Errorf("flight not found")
+		return nil, constant.ERR_FLIGHT_NOT_FOUND
 	}
 
 	flight.Mutex.Lock()
@@ -89,7 +90,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	}
 
 	if assignedSeat == "" {
-		return nil, fmt.Errorf("no available seats found")
+		return nil, constant.ERR_NO_AVAILABLE_SEAT
 	}
 
 	//booking detail update
@@ -100,7 +101,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 		Seat:        assignedSeat,
 		Price:       price,
 		Class:       seatClass,
-		Status:      "Confirmed",
+		Status:      constant.STATUS_CONFIRMED,
 	}
 	bs.Bookings[booking.BookingID] = booking
 
@@ -127,17 +128,17 @@ func (bs *BookingService) CancelBooking(bookingID string) (*domain.Booking, erro
 
 	booking, exists := bs.Bookings[bookingID]
 	if !exists {
-		return nil, fmt.Errorf("booking not found")
+		return nil, constant.ERR_BOOKING_NOT_FOUND
 	}
 
 	// check if already cancelled, cannot cancelled again
-	if booking.Status == "Cancelled" {
+	if booking.Status == constant.STATUS_CANCELLED {
 		return nil, fmt.Errorf("BookingID: %s already cancelled", bookingID)
 	}
 
 	flight, flightExists := bs.FlightRepo.GetFlight(booking.FlightID)
 	if !flightExists {
-		return nil, fmt.Errorf("associated flight not found")
+		return nil, constant.ERR_FLIGHT_NOT_FOUND
 	}
 
 	flight.Mutex.Lock()
@@ -158,11 +159,11 @@ func (bs *BookingService) CancelBooking(bookingID string) (*domain.Booking, erro
 		refund -= fee
 	}
 
-	booking.Status = "Cancelled"
+	booking.Status = constant.STATUS_CANCELLED
 	booking.RefundAmount = refund
 
 	//update status and refund amount in passenger booking history
-	bs.PassengerRepo.UpdatePassengerBookingStatus(booking, "Cancelled")
+	bs.PassengerRepo.UpdatePassengerBookingStatus(booking, constant.STATUS_CANCELLED)
 	bs.PassengerRepo.UpdatePassengerBookingRefundAmount(booking, refund)
 
 	return booking, nil
