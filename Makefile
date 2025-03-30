@@ -18,5 +18,5 @@ ci.lint:
 gen-mock:
 	mockery --all --case snake --disable-version-string --keeptree
 
-test:
+test-coverage:
 	go test ./service/... -coverprofile coverage.out -tags dynamic
