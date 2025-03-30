@@ -1,13 +1,12 @@
 package service
 
 /*
-Cancel
-1. cancel with full refund
-2. cancel with refund including cancellation fee
-3. cancel booking id not found
-4. re-cancel for cancelled booking
-3. TestCancelThenReleaseBookingSeatToAnotherPassenger (Assert Value) [scenario]
-
+Testcase
+	Cancel
+		1. cancel with full refund
+		2. cancel with refund including cancellation fee
+		3. cancel booking id not found
+		4. re-cancel for cancelled booking
 */
 
 import (
@@ -86,7 +85,7 @@ func Test_Cancel_Booking(t *testing.T) {
 
 		mockFlight, mockPassenger, BookService, flightInfo := SetupTestCancelBooking()
 
-		flightInfo.Departure = time.Now().AddDate(0,0,1)
+		flightInfo.Departure = time.Now().AddDate(0, 0, 1)
 
 		booking := &domain.Booking{
 			BookingID:   "B1",
@@ -128,13 +127,13 @@ func Test_Cancel_Booking(t *testing.T) {
 		_, _, BookService, _ := SetupTestCancelBooking()
 
 		booking := &domain.Booking{
-			BookingID:   "B1",
-			PassengerID: "TEST01",
-			FlightID:    "AB123",
-			Seat:        "1A",
-			Price:       1000.0,
-			Class:       "Business",
-			Status:      "Cancelled",
+			BookingID:    "B1",
+			PassengerID:  "TEST01",
+			FlightID:     "AB123",
+			Seat:         "1A",
+			Price:        1000.0,
+			Class:        "Business",
+			Status:       "Cancelled",
 			RefundAmount: 1000.0,
 		}
 

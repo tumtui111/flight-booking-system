@@ -13,7 +13,7 @@ Test case
 		1.7 last-minute booking and have 10% booked seat with frequent flyer discount
 	2. flight not found
 	3. not available seat
-	4. book other seat class
+	4. scenario case flight not available but have passenger cancel booking then book again
 */
 
 import (
@@ -214,6 +214,66 @@ func Test_Booking(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.EqualError(t, err, "no seats available in First")
 
+	})
+
+	t.Run("Success case | scenario case | Not available seat then cancel seat and booking again ", func(t *testing.T) {
+
+		mockFlight, mockPassenger, BookService, _, _, _ := SetupTestBooking()
+
+		flightInfo := domain.Flight{
+			FlightID:    "CD123",
+			Origin:      "JFK",
+			Destination: "LAX",
+			Departure:   time.Now().AddDate(0, 0, 10),
+			Seats: map[domain.SeatClass]*domain.SeatInfo{
+				domain.Economy: {Total: 100, Available: 0, BasePrice: 300, SeatMap: make(map[string]bool)},
+			},
+			ReservedSeats: map[domain.SeatClass]map[string]bool{
+				domain.Economy: make(map[string]bool),
+			},
+		}
+
+		booking := &domain.Booking{
+			BookingID:   "B1",
+			PassengerID: "TEST01",
+			FlightID:    "CD123",
+			Seat:        "1A",
+			Price:       300.0,
+			Class:       "Economy",
+			Status:      "Confirmed",
+		}
+
+		// cancel booking
+		BookService.Bookings["B1"] = booking
+		mockFlight.On("GetFlight", "CD123").Return(&flightInfo, true)
+		mockPassenger.On("UpdatePassengerBookingStatus", booking, "Cancelled").Return()
+		mockPassenger.On("UpdatePassengerBookingRefundAmount", booking, 300.0).Return()
+
+		cancelResp, err := BookService.CancelBooking("B1")
+		assert.Nil(t, err)
+		assert.Equal(t, "Cancelled", cancelResp.Status)
+		assert.Equal(t, 300.0, cancelResp.RefundAmount)           // cancel before flight 10 day, not include cancellation fee
+		assert.Equal(t, "1A", cancelResp.Seat) 
+		assert.Equal(t, 1, flightInfo.Seats["Economy"].Available) // check flight info available seat = 1
+		// ------------
+
+		// booking seat again
+		passengerDetailExists := domain.Passenger{
+			PassengerID:     "TEST01",
+			IsFrequentFlyer: false,
+			BookingHistory: []domain.BookingHistory{
+				{},
+			},
+		}
+
+		mockFlight.On("GetFlight", "CD123").Return(&flightInfo, true).Once()
+		mockPassenger.On("GetPassenger", "TEST01").Return(&passengerDetailExists, true)
+
+		bookingResp, err := BookService.BookSeat("TEST01", "CD123", "Economy", time.Now()) // book before flight 10 day, price add only 90% booked seat
+		assert.Equal(t, "B2", bookingResp.BookingID)
+		assert.Equal(t, 327.0, bookingResp.Price)
+		assert.Equal(t, "1A", bookingResp.Seat)
+		assert.Equal(t, 0, flightInfo.Seats["Economy"].Available)
 	})
 
 }
