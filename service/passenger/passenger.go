@@ -1,8 +1,8 @@
 package service
 
 import (
-	"flight-book-system/domain"
 	"flight-book-system/constant"
+	"flight-book-system/domain"
 	"sync"
 )
 
@@ -30,7 +30,7 @@ func (ps *PassengerService) GetPassengerDetails(passengerID string) (*domain.Pas
 
 	passenger, exists := ps.PassengerRepo.GetPassenger(passengerID)
 	if !exists {
-		return nil, constant.ERR_PASSENGER_NOT_FOUND
+		return nil, constant.ErrPassengerNotFound
 	}
 	return passenger, nil
 }

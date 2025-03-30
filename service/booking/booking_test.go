@@ -212,7 +212,7 @@ func Test_Booking(t *testing.T) {
 		_, err := BookService.BookSeat("TEST01", "AB123", "First", time.Date(2024, 7, 8, 8, 0, 0, 0, time.Local))
 
 		assert.NotNil(t, err)
-		assert.EqualError(t, err, "no seats available in First")
+		assert.EqualError(t, err, "no available seats found")
 
 	})
 
@@ -270,6 +270,7 @@ func Test_Booking(t *testing.T) {
 		mockPassenger.On("GetPassenger", "TEST01").Return(&passengerDetailExists, true)
 
 		bookingResp, err := BookService.BookSeat("TEST01", "CD123", "Economy", time.Now()) // book before flight 10 day, price add only 90% booked seat
+		assert.Nil(t, err)
 		assert.Equal(t, "B2", bookingResp.BookingID)
 		assert.Equal(t, 327.0, bookingResp.Price)
 		assert.Equal(t, "1A", bookingResp.Seat)

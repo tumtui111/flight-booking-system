@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"flight-book-system/constant"
 	"flight-book-system/domain"
 
 	bookingSvc "flight-book-system/service/booking"
@@ -51,8 +53,8 @@ func BookFlight(bookingService *bookingSvc.BookingService) {
 	if err != nil {
 
 		// other error handle
-		if err != fmt.Errorf("no seats available in %s", seatClass) {
-			fmt.Println("Booking failed: ", err)
+		if !errors.Is(err, constant.ErrNoAvailableSeat) {
+			fmt.Println("Booking failed:", err)
 			return
 		}
 
@@ -71,7 +73,7 @@ func BookFlight(bookingService *bookingSvc.BookingService) {
 			return
 		}
 
-		fmt.Printf("Booking failed: %v Upgrade to %s? (yes/no)\n", err, domain.ClassOrder[classIndex+1])
+		fmt.Printf("Booking failed: No seats available in %v. Upgrade to %s? (yes/no)\n", seatClass, domain.ClassOrder[classIndex+1])
 		_, err := fmt.Scan(&isUpgradeClass)
 		if err != nil {
 			fmt.Println("invalid seat class format.")

@@ -1,12 +1,12 @@
 package constant
 
 import (
-	"fmt"
+	"errors"
 )
 
 var (
-	ERR_FLIGHT_NOT_FOUND    = fmt.Errorf("flight not found")
-	ERR_BOOKING_NOT_FOUND   = fmt.Errorf("booking not found")
-	ERR_PASSENGER_NOT_FOUND = fmt.Errorf("passenger not found")
-	ERR_NO_AVAILABLE_SEAT   = fmt.Errorf("no available seats found")
+	ErrFlightNotFound    = errors.New("flight not found")
+	ErrBookingNotFound   = errors.New("booking not found")
+	ErrPassengerNotFound = errors.New("passenger not found")
+	ErrNoAvailableSeat   = errors.New("no available seats found")
 )

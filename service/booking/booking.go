@@ -1,8 +1,8 @@
 package service
 
 import (
-	"flight-book-system/domain"
 	"flight-book-system/constant"
+	"flight-book-system/domain"
 
 	"fmt"
 	"math"
@@ -45,7 +45,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	// flight detail update
 	flight, exists := bs.FlightRepo.GetFlight(flightID)
 	if !exists {
-		return nil, constant.ERR_FLIGHT_NOT_FOUND
+		return nil, constant.ErrFlightNotFound
 	}
 
 	flight.Mutex.Lock()
@@ -54,7 +54,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	// check seat available -> then return to ask for upgrade class
 	seatInfo, exists := flight.Seats[seatClass]
 	if !exists || seatInfo.Available == 0 {
-		return nil, fmt.Errorf("no seats available in %s", seatClass)
+		return nil, constant.ErrNoAvailableSeat
 	}
 
 	// check passenger detail exists -> if not, created
@@ -90,7 +90,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 	}
 
 	if assignedSeat == "" {
-		return nil, constant.ERR_NO_AVAILABLE_SEAT
+		return nil, constant.ErrNoAvailableSeat
 	}
 
 	//booking detail update
@@ -128,7 +128,7 @@ func (bs *BookingService) CancelBooking(bookingID string) (*domain.Booking, erro
 
 	booking, exists := bs.Bookings[bookingID]
 	if !exists {
-		return nil, constant.ERR_BOOKING_NOT_FOUND
+		return nil, constant.ErrBookingNotFound
 	}
 
 	// check if already cancelled, cannot cancelled again
@@ -138,7 +138,7 @@ func (bs *BookingService) CancelBooking(bookingID string) (*domain.Booking, erro
 
 	flight, flightExists := bs.FlightRepo.GetFlight(booking.FlightID)
 	if !flightExists {
-		return nil, constant.ERR_FLIGHT_NOT_FOUND
+		return nil, constant.ErrFlightNotFound
 	}
 
 	flight.Mutex.Lock()
