@@ -4,10 +4,8 @@ Copyright © 2025 worawit.l.official@gmail.com
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"flight-book-system/domain"
@@ -72,7 +70,7 @@ func InteractiveProgram(
 		FlightID:    "AB123",
 		Origin:      "JFK",
 		Destination: "LAX",
-		Departure:   time.Date(2024, 7, 10, 8, 0, 0, 0, time.Local),
+		Departure:   time.Date(2025, 4, 10, 8, 0, 0, 0, time.Local),
 		Seats: map[domain.SeatClass]*domain.SeatInfo{
 			domain.NotAvailable: {Total: 1, Available: 1, BasePrice: 100, SeatMap: make(map[string]bool)}, // for test full or not available seat class
 			domain.Economy:      {Total: 100, Available: 100, BasePrice: 300, SeatMap: make(map[string]bool)},
@@ -113,7 +111,7 @@ func InteractiveProgram(
 		case 3:
 			GetFlightInformation(flightService)
 		case 4:
-			SearchAvailableFlightBasedOn(flightRepo)
+			SearchAvailableFlight(flightRepo)
 		case 5:
 			GetPassengerDetails(passengerService)
 		default:
@@ -123,205 +121,5 @@ func InteractiveProgram(
 			}
 
 		}
-	}
-}
-
-func BookFlight(bookingService *bookingSvc.BookingService) {
-
-	defer fmt.Println("====================================================================================")
-
-	var passengerID, seatClassInput, flightID, isUpgradeClass string
-
-	// input passenger ID
-	fmt.Println("Enter Passenger ID:")
-	_, err := fmt.Scan(&passengerID)
-	if err != nil {
-		fmt.Println("error invalid passengerID format.")
-		return
-	}
-	passengerID = strings.TrimSpace(passengerID)
-
-	// input flight ID
-	fmt.Println("Enter Flight ID:")
-	_, err = fmt.Scan(&flightID)
-	if err != nil {
-		fmt.Println("error invalid FlightID format.")
-		return
-	}
-	flightID = strings.TrimSpace(flightID)
-
-	// input seat class
-	fmt.Println("Enter Seat Class (Economy, Business, First):")
-	_, err = fmt.Scan(&seatClassInput)
-	if err != nil {
-		fmt.Println("error invalid seat class format.")
-		return
-	}
-	seatClassInput = strings.TrimSpace(seatClassInput)
-	seatClass := domain.SeatClass(seatClassInput)
-	bookingDate := time.Now()
-
-	// book seat
-	booking, err := bookingService.BookSeat(passengerID, flightID, seatClass, bookingDate)
-	if err != nil {
-
-		// other error handle
-		if err != fmt.Errorf("no seats available in %s", seatClass) {
-			fmt.Println("Booking failed: ", err)
-			return
-		}
-
-		// not have seat available error and upgrade to higher class logic
-		classIndex := -1
-		for i, class := range domain.ClassOrder {
-			if class == seatClass {
-				classIndex = i
-				break
-			}
-		}
-
-		// check invalid class or First class that cannot be upgraded
-		if classIndex == -1 || classIndex == 3 {
-			fmt.Println("Booking failed: ", err)
-			return
-		}
-
-		fmt.Printf("Booking failed: %v Upgrade to %s? (yes/no)\n", err, domain.ClassOrder[classIndex+1])
-		_, err := fmt.Scan(&isUpgradeClass)
-		if err != nil {
-			fmt.Println("invalid seat class format.")
-			return
-		}
-
-		// re-booking with higher class
-		if isUpgradeClass == "yes" {
-			seatClass = domain.ClassOrder[classIndex+1]
-			booking, err := bookingService.BookSeat(passengerID, flightID, seatClass, bookingDate)
-			if err != nil {
-				fmt.Println("Booking failed: ", err)
-			} else {
-				b, _ := json.Marshal(booking)
-				fmt.Printf("Booking successful: %+v\n", string(b))
-			}
-
-		}
-
-	} else {
-
-		b, _ := json.Marshal(booking)
-		fmt.Printf("Booking successful: %+v\n", string(b))
-	}
-}
-
-func CancelFlight(bookingService *bookingSvc.BookingService) {
-
-	defer fmt.Println("====================================================================================")
-
-	var bookingID string
-
-	fmt.Println("Enter Booking ID:")
-	_, err := fmt.Scan(&bookingID)
-	if err != nil {
-		fmt.Println("invalid booking ID format.")
-		return
-	}
-
-	canceledBooking, err := bookingService.CancelBooking(bookingID)
-	if err != nil {
-		fmt.Println("Cancellation failed:", err)
-	} else {
-		b, _ := json.Marshal(canceledBooking)
-		fmt.Printf("Booking cancelled: %+v\n", string(b))
-	}
-}
-
-func GetFlightInformation(flightService *flightSvc.FlightService) {
-
-	defer fmt.Println("====================================================================================")
-
-	var flightID string
-
-	fmt.Println("Enter Flight ID:")
-	_, err := fmt.Scan(&flightID)
-	if err != nil {
-		fmt.Println("invalid flight ID format.")
-		return
-	}
-
-	flight, err := flightService.GetFlightInfo(flightID)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Printf("Flight ID: %s\nOrigin: %s\nDestination: %s\nDeparture: %s\n", flight.FlightID, flight.Origin, flight.Destination, flight.Departure)
-		fmt.Println("Seat Availability:")
-		for class, info := range flight.Seats {
-			fmt.Printf("%s - Total: %d, Available: %d, Base Price: %.2f\n", class, info.Total, info.Available, info.BasePrice)
-		}
-	}
-
-}
-
-func SearchAvailableFlightBasedOn(flightRepo *flightRepo.FlightRepository) {
-
-	defer fmt.Println("====================================================================================")
-
-	var origin, destination, dateInput string
-
-	fmt.Println("Enter Origin:")
-	_, err := fmt.Scan(&origin)
-	if err != nil {
-		fmt.Println("invalid flight ID format.")
-		return
-	}
-
-	fmt.Println("Enter Destination:")
-	_, err = fmt.Scan(&destination)
-	if err != nil {
-		fmt.Println("invalid flight ID format.")
-		return
-	}
-
-	fmt.Println("Enter Date (YYYY-MM-DD):")
-	_, err = fmt.Scan(&dateInput)
-	if err != nil {
-		fmt.Println("invalid flight ID format.")
-		return
-	}
-
-	date, err := time.Parse("2006-01-02", dateInput)
-	if err != nil {
-		fmt.Println("Invalid date format.")
-		return
-	}
-
-	flights := flightRepo.SearchFlights(origin, destination, date)
-	if len(flights) == 0 {
-		fmt.Println("No available flights found.")
-	} else {
-		for _, f := range flights {
-			fmt.Printf("Flight ID: %s, Departure: %s\n", f.FlightID, f.Departure)
-		}
-	}
-}
-
-func GetPassengerDetails(passengerService *passengerSvc.PassengerService) {
-
-	defer fmt.Println("====================================================================================")
-
-	var passengerID string
-
-	fmt.Println("Enter passenger id:")
-	_, err := fmt.Scan(&passengerID)
-	if err != nil {
-		fmt.Println("invalid passenger id format.")
-		return
-	}
-
-	passenger, err := passengerService.GetPassengerDetails(passengerID)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		p, _ := json.Marshal(passenger)
-		fmt.Printf("Passenger Details: %+v\n", string(p))
 	}
 }

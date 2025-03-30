@@ -65,7 +65,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 			IsFrequentFlyer: false,
 			BookingHistory:  []domain.BookingHistory{}}
 
-			bs.PassengerRepo.AddPassenger(passenger)
+		bs.PassengerRepo.AddPassenger(passenger)
 	}
 
 	// dynamic pricing ( think before available seat is decreased)
@@ -111,7 +111,7 @@ func (bs *BookingService) BookSeat(passengerID, flightID string, seatClass domai
 		Destination: flight.Destination,
 		Departure:   flight.Departure,
 		BookingID:   booking.BookingID,
-		BookindDate: bookingDate,
+		BookingDate: bookingDate,
 		Class:       seatClass,
 		Seat:        booking.Seat,
 		Price:       booking.Price,

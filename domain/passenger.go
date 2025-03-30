@@ -10,7 +10,7 @@ type BookingHistory struct {
 	Destination  string    `json:"destination"`
 	Departure    time.Time `json:"departure"`
 	BookingID    string    `json:"booking_id"`
-	BookindDate  time.Time `json:"booking_date"`
+	BookingDate  time.Time `json:"booking_date"`
 	Class        SeatClass `json:"class"`
 	Seat         string    `json:"seat"`
 	Price        float64   `json:"price"`
